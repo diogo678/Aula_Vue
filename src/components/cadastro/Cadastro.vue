@@ -1,30 +1,30 @@
 <!-- alurapic/src/components/cadastro/Cadastro.vue -->
 
-
-
-
 <template>
 
   <div>
     <h1 class="centralizado">Cadastro</h1>
     <h2 class="centralizado">{{ foto.titulo }}</h2>
-
+    <h2 class="centralizado">{{foto.url}}</h2>
+    <h2 class="centralizado">{{ foto.descricao}}</h2>
 
     <form @submit.prevent="grava()">
       <div class="controle">
         <label for="titulo">TÍTULO</label>
-        <input :value="foto.titulo" @input="foto.titulo = $event.target.value" id="titulo" autocomplete="off">
+        <input v-model.lazy="foto.titulo" id="titulo" autocomplete="off">
       </div>
 
       <div class="controle">
         <label for="url">URL</label>
-        <input :value="foto.url" @input="foto.url = $event.target.value" id="url" autocomplete="off">
-        <imagem-responsiva/>
+        <input v-model.lazy="foto.url" id="url" autocomplete="off">
+        <imagem-responsiva :url="foto.url" :titulo="foto.titulo" v-show="foto.url"/>
       </div>
 
       <div class="controle">
         <label for="descricao">DESCRIÇÃO</label>
-        <textarea :value="foto.descricao" id="descricao" autocomplete="off" @input="foto.descricao = $event.target.value"></textarea>
+        <textarea v-model.lazy="foto.descricao" id="descricao" autocomplete="off">
+
+        </textarea>
       </div>
 
       <div class="centralizado">
@@ -41,38 +41,30 @@
 
 import ImagemResponsiva from '../shared/imagem-responsiva/ImagemResponsiva.vue'
 import Botao from '../shared/botao/Botao.vue';
+import Foto from '../../domain/foto/Foto.js';
 
 export default {
 
   components: {
 
-    'imagem-responsiva': ImagemResponsiva, 
+    'imagem-responsiva': ImagemResponsiva,
     'meu-botao': Botao
   },
 
   data() {
     return {
 
-      foto: {
-        titulo: '',
-        url: '', 
-        descricao: ''
-      }
+      foto: new Foto()
     }
   },
 
   methods: {
 
     grava() {
-
-      console.log(this.foto);
-
-      this.foto = {
-          titulo: '',
-          url: '',
-          descricao: ''
-      };
-
+  console.log(this.foto);
+      this.$http
+          .post('http://localhost:3000/v1/fotos', this.foto)
+          .then(() => this.foto = new Foto(), err => console.log(err));
     }
   }
 }

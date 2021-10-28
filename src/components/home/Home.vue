@@ -2,23 +2,22 @@
 
 <template>
   <div>
-
     <h1 class="centralizado">Alurapic</h1>
 
-    <input type="search" class="filtro" @input="filtro = $event.target.value" placeholder="filtre pelo título da foto">
+    <!-- novo elemento para exibir mensagens para o usuário -->
+    <p v-show="mensagem" class="centralizado">{{ mensagem }}</p>
 
+    <input type="search" class="filtro" @input="filtro = $event.target.value" placeholder="filtre pelo título da foto">
     <ul class="lista-fotos">
       <li class="lista-fotos-item" v-for="foto of fotosComFiltro">
         <meu-painel :titulo="foto.titulo">
-      <imagem-responsiva :url="foto.url" :titulo="foto.titulo" v-meu-transform:scale.animate="1.2"/>
-          <botao-meu
+          <imagem-responsiva :url="foto.url" :titulo="foto.titulo" v-meu-transform:scale.animate="1.2"/>
+          <meu-botao
+              rotulo="remover"
               tipo="button"
-              rotulo="Remover"
-              v-on:botaoAtivado="remover(foto)"
-              v-bind:confirmacao="true"
-              estilo="perigo" >
-
-          </botao-meu>
+              estilo="perigo"
+              :confirmacao="true"
+              @botaoAtivado="remove(foto)"/>
         </meu-painel>
       </li>
     </ul>
@@ -29,7 +28,7 @@
 
 import Painel from '../shared/painel/Painel.vue';
 import ImagemResponsiva from '../shared/imagem-responsiva/ImagemResponsiva.vue'
-import Botao from "../shared/botao/Botao.vue";
+import Botao from '../shared/botao/Botao.vue';
 
 export default {
 
@@ -37,7 +36,7 @@ export default {
 
     'meu-painel': Painel,
     'imagem-responsiva': ImagemResponsiva,
-    'botao-meu': Botao
+    'meu-botao': Botao
   },
 
   data () {
@@ -45,18 +44,43 @@ export default {
 
       fotos: [],
 
-      filtro: ''
+      filtro: '',
+
+      mensagem: ''
     }
   },
 
   computed: {
+
     fotosComFiltro() {
+
       if (this.filtro) {
         let exp = new RegExp(this.filtro.trim(), 'i');
         return this.fotos.filter(foto => exp.test(foto.titulo));
       } else {
         return this.fotos;
       }
+    }
+
+  },
+
+  methods: {
+
+    remove(foto) {
+      console.log(foto)
+      this.$http
+          .delete(`http://localhost:3000/v1/fotos/${foto._id}`)
+          .then(
+              () => {
+                let indice = this.fotos.indexOf(foto); // acha a posição da foto na lista
+                this.fotos.splice(indice, 1); // a instrução altera o array
+                this.mensagem = 'Foto removida com sucesso'
+              },
+              err => {
+                this.mensagem = 'Não foi possível remover a foto';
+                console.log(err);
+              }
+          )
     }
   },
 
@@ -66,13 +90,6 @@ export default {
         .get('http://localhost:3000/v1/fotos')
         .then(res => res.json())
         .then(fotos => this.fotos = fotos, err => console.log(err));
-  },
-  methods: {
-
-    remover(foto) {
-
-      alert('Remove a foto! ' + foto.titulo);
-    }
   }
 }
 </script>
