@@ -19,16 +19,17 @@ export default {
 
   components: {
     'meu-menu' : Menu
-
   },
-  
+
   data() {
 
     return {
 
-      routes
+      routes: routes.filter(route => route.menu)
     }
+
   }
+
 }
 </script>
 
